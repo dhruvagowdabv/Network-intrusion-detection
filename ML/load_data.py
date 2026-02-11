@@ -42,7 +42,7 @@ print("Unique labels before:", df["label"].unique())
 # convert label to binary
 df["label"] = df["label"].apply(lambda x: 0 if x == "normal" else 1)
 
-# check after conversion
+
 print("Unique labels after:", df["label"].unique())
 print(df["label"].value_counts())
 
@@ -56,8 +56,6 @@ print("Label shape:", y.shape)
 
 
 
-
-# identify categorical and numerical columns
 categorical_cols = ["protocol_type", "service", "flag"]
 numerical_cols = [col for col in X.columns if col not in categorical_cols]
 
@@ -81,7 +79,7 @@ encoded_cat_df = pd.DataFrame(
     columns=encoder.get_feature_names_out(categorical_cols)
 )
 
-# reset index to avoid issues
+
 encoded_cat_df.reset_index(drop=True, inplace=True)
 numerical_df = X[numerical_cols].reset_index(drop=True)
 
@@ -94,7 +92,7 @@ print("Final feature shape after encoding:", X_encoded.shape)
 
 from sklearn.model_selection import train_test_split
 
-# train-test split
+
 X_train, X_test, y_train, y_test = train_test_split(
     X_encoded,
     y,
@@ -134,10 +132,10 @@ model = LogisticRegression(
 
 model.fit(X_train_scaled, y_train)
 
-# predictions
+
 y_pred = model.predict(X_test_scaled)
 
-# evaluation
+
 print("Confusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
 
@@ -148,11 +146,10 @@ print(classification_report(y_test, y_pred))
 
 import joblib
 
-# create models directory if not exists
+
 model_dir = BASE_DIR / "models"
 model_dir.mkdir(exist_ok=True)
 
-# save artifacts
 joblib.dump(model, model_dir / "logistic_model.pkl")
 joblib.dump(scaler, model_dir / "scaler.pkl")
 joblib.dump(encoder, model_dir / "encoder.pkl")
@@ -163,7 +160,6 @@ print("Model, scaler, and encoder saved successfully.")
                                                 # Phase 2 
 from sklearn.ensemble import RandomForestClassifier
 
-# train Random Forest model
 rf_model = RandomForestClassifier(
     n_estimators=200,
     random_state=42,
@@ -185,10 +181,7 @@ print(classification_report(y_test, y_pred_rf))
 
 
 
-# Feature Importance
-import pandas as pd
 
-# get feature importance from random forest
 importances = rf_model.feature_importances_
 
 feature_names = X_encoded.columns
@@ -198,13 +191,13 @@ feature_importance_df = pd.DataFrame({
     "importance": importances
 })
 
-# sort by importance
+
 feature_importance_df = feature_importance_df.sort_values(
     by="importance",
     ascending=False
 )
 
-# show top 15 features
-print("\nTop 15 Important Features:")
+
+print("\nTop Important Features:")
 print(feature_importance_df.head(15))
                      
