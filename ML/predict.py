@@ -13,30 +13,34 @@ encoder = joblib.load(MODEL_DIR / "encoder.pkl")
 
 def predict_single(sample_dict):
     """
-    sample_dict: dictionary of raw feature values (same format as training)
+    sample_dict: dictionary of raw feature values
     returns: prediction and probability
     """
 
-
+    # Convert input to DataFrame
     input_df = pd.DataFrame([sample_dict])
 
     categorical_cols = ["protocol_type", "service", "flag"]
     numerical_cols = [col for col in input_df.columns if col not in categorical_cols]
 
+    # Encode categorical
     encoded_cat = encoder.transform(input_df[categorical_cols])
     encoded_cat_df = pd.DataFrame(
         encoded_cat,
         columns=encoder.get_feature_names_out(categorical_cols)
     )
 
- 
+    # Combine numerical + encoded
     final_df = pd.concat(
         [input_df[numerical_cols].reset_index(drop=True),
          encoded_cat_df.reset_index(drop=True)],
         axis=1
     )
 
-    # Scale
+    # Align columns with training
+    final_df = final_df.reindex(columns=scaler.feature_names_in_, fill_value=0)
+
+    # Scale features
     final_scaled = scaler.transform(final_df)
 
     # Predict
@@ -47,7 +51,7 @@ def predict_single(sample_dict):
 
 
 if __name__ == "__main__":
-    
+
     sample = {
         "duration": 0,
         "protocol_type": "tcp",
@@ -93,5 +97,6 @@ if __name__ == "__main__":
     }
 
     pred, prob = predict_single(sample)
+
     print("Prediction:", "Attack" if pred == 1 else "Normal")
     print("Confidence:", prob)
