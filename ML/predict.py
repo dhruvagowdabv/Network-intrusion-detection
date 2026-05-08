@@ -11,6 +11,34 @@ scaler = joblib.load(MODEL_DIR / "scaler.pkl")
 encoder = joblib.load(MODEL_DIR / "encoder.pkl")
 
 
+                                                       # Explantion layer 
+def generate_reasons(sample_dict):
+    reasons = []
+
+    # Traffic volume
+    if sample_dict["src_bytes"] > 1000:
+        reasons.append("High source traffic volume")
+
+    if sample_dict["dst_bytes"] > 1000:
+        reasons.append("High destination traffic volume")
+
+    # Suspicious flag
+    if sample_dict["flag"] == "S0":
+        reasons.append("Connection not established (S0 flag anomaly)")
+
+    # Error rates
+    if sample_dict["serror_rate"] > 0.5:
+        reasons.append("High SYN error rate")
+
+    if sample_dict["srv_serror_rate"] > 0.5:
+        reasons.append("High service SYN error rate")
+
+    # Connection count
+    if sample_dict["count"] > 50:
+        reasons.append("High number of connections to host")
+
+    return reasons
+
 def predict_single(sample_dict):
     """
     sample_dict: dictionary of raw feature values
@@ -44,10 +72,24 @@ def predict_single(sample_dict):
     final_scaled = scaler.transform(final_df)
 
     # Predict
-    prediction = rf_model.predict(final_scaled)[0]
     probability = rf_model.predict_proba(final_scaled)[0][1]
 
-    return prediction, probability
+# 🔥 CUSTOM THRESHOLD
+    threshold = 0.4
+
+    prediction = 1 if probability > threshold else 0
+
+    # Explanation part
+    reasons = generate_reasons(sample_dict)
+    alert = True if prediction == 1 else False
+
+    # return prediction, probability
+    return {
+    "prediction": "Attack" if prediction == 1 else "Normal",
+    "confidence": float(probability),
+    "alert": alert,
+    "reasons": reasons
+}
 
 
 if __name__ == "__main__":

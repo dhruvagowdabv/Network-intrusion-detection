@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Monitoring</title>
+</head>
+<body>
+
+<h1>🔴 Live Intrusion Monitoring</h1>
+
+<button onclick="startMonitoring()">Start Monitoring</button>
+
+<div id="logs"></div>
+
+<script>
+let interval = null;
+
+function startMonitoring() {
+    if (interval) return;
+    interval = setInterval(fetchData, 1000);
+}
+
+function fetchData() {
+    fetch("/live/")
+    .then(res => res.json())
+    .then(data => {
+        const container = document.getElementById("logs");
+
+        let entry = document.createElement("div");
+
+        let time = new Date().toLocaleTimeString();
+
+        if (data.alert) {
+            entry.innerHTML = `
+                <div style="border:2px solid red; padding:10px; margin:10px;">
+                    <strong>[${time}] 🚨 ATTACK DETECTED</strong><br>
+                    Confidence: ${data.confidence}<br>
+                    Source: ${data.log.src_ip} → ${data.log.dst_ip}
+                    
+                    <ul>
+                        ${data.reasons.map(r => `<li>${r}</li>`).join("")}
+                    </ul>
+                </div>
+            `;
+        } else {
+            entry.innerHTML = `
+                <div style="border:2px solid green; padding:10px; margin:10px;">
+                    [${time}] ✔ Normal Traffic
+                </div>
+            `;
+        }
+
+        container.prepend(entry);
+    })
+    .catch(err => console.error(err));
+}
+</script>
+
+</body>
+</html>

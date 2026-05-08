@@ -74,6 +74,16 @@ def simulate_realtime(file_path):
             result = response.json()
 
             print(f"[{i+1}] Prediction: {result['prediction']} | Confidence: {result['confidence']}")
+            if result["alert"]:
+                print(f"[{i+1}] 🚨 ATTACK DETECTED")
+                print(f"   Confidence: {result['confidence']}")
+    
+                if result["reasons"]:
+                    print("   Reasons:")
+                    for r in result["reasons"]:
+                        print(f"   - {r}")
+            else:
+                print(f"[{i+1}] Normal traffic")
 
         except Exception as e:
             print("Error:", e)

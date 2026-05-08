@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results</title>
+</head>
+<body>
+
+<h1>Analysis Results</h1>
+
+{% for r in results %}
+
+    {% if r.prediction == "Attack" %}
+<div style="border: 2px solid red; padding: 10px; margin: 10px;">
+    <h3 style="color:red;">🚨 ATTACK DETECTED</h3>
+    <p><strong>Confidence:</strong> {{ r.confidence }}</p>
+
+    {% if r.reasons %}
+        <p><strong>Reasons:</strong></p>
+        <ul>
+        {% for reason in r.reasons %}
+            <li>{{ reason }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+
+        {% if r.reasons %}
+            <ul>
+            {% for reason in r.reasons %}
+                <li>{{ reason }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
+    {% else %}
+        <div style="border: 2px solid green; padding: 10px; margin: 10px;">
+    ✔ Normal Traffic
+</div>
+    {% endif %}
+
+    <hr>
+
+{% endfor %}
+
+<a href="/">Go Back</a>
+
+</body>
+</html>

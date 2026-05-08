@@ -1,16 +1,22 @@
 from django.shortcuts import render
 
 # from django.http import JsonResponse
-
 # from django.http import JsonResponse
 # from ML.predict import predict_single
-
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+# live simulation
+import random
+from ml.log_parser import parse_log_file
+
 from ml.predict import predict_single
+                #   for upload html
+from django.shortcuts import render
+def home(request):
+    return render(request, "upload.html")
 
 
 @csrf_exempt
@@ -24,12 +30,9 @@ def predict_view(request):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
     try:
-        prediction, probability = predict_single(data)
+        result = predict_single(data)
 
-        return JsonResponse({
-            "prediction": "Attack" if prediction == 1 else "Normal",
-            "confidence": float(probability)
-        })
+        return JsonResponse(result)
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
@@ -64,7 +67,7 @@ def upload_log_view(request):
 
     try:
         results = parse_log_file(file_path)
-        return JsonResponse({"results": results})
+        return render(request, "result.html", {"results": results})
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
@@ -80,7 +83,27 @@ def upload_log_view(request):
 
 
 
+# for live simulation 
+current_index = 0
 
+def live_feed(request):
+    global current_index
+
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    file_path = os.path.join(BASE_DIR, "ml", "logs", "demo_logs.csv")
+
+    logs = parse_log_file(file_path)
+
+    if current_index >= len(logs):
+        current_index = 0  # loop again
+
+    result = logs[current_index]
+    current_index += 1
+
+    return JsonResponse(result)
+
+def live_page(request):
+    return render(request, "live.html")
 
 
 

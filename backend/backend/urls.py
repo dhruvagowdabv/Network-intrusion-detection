@@ -21,11 +21,21 @@ from detector.views import predict_view
 
 # for AI log parser
 from detector.views import upload_log_view
+# for result ui
+from detector.views import home
+
+# for live simulation
+from detector.views import live_feed
+from detector.views import live_page
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('predict/', health_check),
+    # for result ui
+    path('', home),
     path('predict/', predict_view),
-    # parsing
     path('upload-log/', upload_log_view),
+    # live simulation
+    path('live/', live_feed),
+    path('live-ui/', live_page),
+
 ]
